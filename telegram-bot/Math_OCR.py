@@ -5,8 +5,7 @@ class OCR:
     def __init__(self):
         self.model = pix2tex.LatexOCR()
         
-    def predict(self, path_to_img):
-        img = Image.open(path_to_img)
+    def predict(self, img: Image):
         ltx = self.model(img=img)
         
         return ltx
