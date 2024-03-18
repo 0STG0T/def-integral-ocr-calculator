@@ -15,8 +15,7 @@ config: Config = load_config('.env')
 bot: Bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
 dp: Dispatcher = Dispatcher(storage=storage)
 
-dp.include_router(admin_handlers.router_admin)
-dp.include_router(user_handlers.router)
+dp.include_router(handlers.router)
 
 
 async def main():
