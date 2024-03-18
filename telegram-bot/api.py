@@ -21,6 +21,10 @@ class API:
         Args:
             ltx (str): LaTex string
             out_path (str): path where the picture of the plot will be saved
+        Returns:
+            dict:   
+                    success - True/False,
+                    other keys if success is True
         """
         
         import matplotlib.pyplot as plt
