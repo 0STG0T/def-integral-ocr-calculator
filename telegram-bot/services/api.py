@@ -47,7 +47,7 @@ class API:
         except:
             pass
         
-        file_path = f'latex_integral_{id}.png'
+        file_path = f'../temp/latex_integral_{id}.png'
 
         try:
             # Check if the file already exists
