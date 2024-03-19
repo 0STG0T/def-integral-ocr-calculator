@@ -9,11 +9,11 @@ def main():
     
     ltx = ocr.predict(path_to_img=path_to_img)
     
-    calc = IntegralCalculator(ltx)
-    
     print('\n\n-------------- Результаты ---------------\n')
     print('Интеграл:', ltx)
     print('Количество разбийений:', n_chunks, '\n')
+    
+    calc = IntegralCalculator(ltx)
     
     print("Интегрирование методом средних квадратов:", calc.integrate_by_squares(n_chunks))
     print("Интегрирование методом трапеций:", calc.integrate_by_trapezoids(n_chunks))
