@@ -12,7 +12,6 @@ from core.config import bot
 from services import *
 from keyboards import *
 
-
 router: Router = Router()
 
 
@@ -32,9 +31,20 @@ async def calculate_topics(message: Message):
         latex = API().get_latex(img)
         print(type(latex), latex)
         try:
-            API.plot_latex(latex, '../temp', str(message.from_user.id))
+            answer = API.integrate_from_latex(latex, 1000)
+            if answer['success']:
+                text = str('<b>Метод прямоугольников</b>: <i>{}</i>\n'
+                           '<b>Метод трапеций</b>: <i>{}</i>\n'
+                           '<b>Метод парабол</b>: <i>{}</i>').format(
+                    answer['squares_method'],
+                    answer['trapezoids_method'],
+                    answer['parabolic_method']
+                )
+
+            await message.answer(text)
             # await bot.send_photo(
-            #     f'../temp/latex_integral_{message.from_user.id}.jpg',
+            #     chat_id=message.from_user.id,
+            #     photo='latex_integral_{message.from_user.id}.jpg',
             #     caption='Верно ли распознан интеграл?')
         except Exception as e:
             print(e)
@@ -57,8 +67,8 @@ async def calculate_function(message: Message, state: FSMContext):
 
     text = f'Интеграл для функции <code>sqrt({k} * x + {b})</code>\nВ пределах от {left} до {right}:\n\n'
     text += ('<b>Метод прямоугольников</b>: <i>{}</i>\n'
-            '<b>Метод трапеций</b>: <i>{}</i>\n'
-            '<b>Метод парабол</b>: <i>{}</i>').format(
+             '<b>Метод трапеций</b>: <i>{}</i>\n'
+             '<b>Метод парабол</b>: <i>{}</i>').format(
         str(rectangle_method(func, left, right, 1000)),
         str(trapezoid_method(func, left, right, 1000)),
         str(simpson_method(func, left, right, 1000))

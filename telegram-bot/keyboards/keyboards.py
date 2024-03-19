@@ -62,3 +62,19 @@ def create_back_to_modules_kb(grade) -> InlineKeyboardMarkup:
     kb.row(button, width=1)
 
     return kb.as_markup(resize_keyboard=True)
+
+
+def create_confirm_kb() -> InlineKeyboardMarkup:
+    kb: InlineKeyboardBuilder = InlineKeyboardBuilder()
+    buttons: list[InlineKeyboardButton] = []
+    for button in ['✅ Да', '❌ Нет, попробовать снова']:
+        buttons.append(InlineKeyboardButton(
+            text=button,
+            callback_data=f'{button}_grade'
+        )
+        )
+
+    # buttons.append(InlineKeyboardButton(text=LEXICON_RU['back_button'], callback_data='back_button_pressed'))
+    kb.row(*buttons, width=2)
+
+    return kb.as_markup(resize_keyboard=True)
