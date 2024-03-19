@@ -3,6 +3,7 @@ import io
 from aiogram import F
 from aiogram.dispatcher.router import Router
 from aiogram.filters import CommandStart, StateFilter, Command
+from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, CallbackQuery, ContentType
 from aiogram.fsm.context import FSMContext
 from PIL import Image
@@ -14,6 +15,11 @@ from keyboards import *
 
 router: Router = Router()
 
+user_latex: dict[str, str] = {}
+
+class UserStates(StatesGroup):
+    set_n = State()
+
 
 @router.message(Command('help'))
 async def process_start_command(message: Message, state: FSMContext):
@@ -21,7 +27,7 @@ async def process_start_command(message: Message, state: FSMContext):
 
 
 @router.message(F.photo)
-async def calculate_topics(message: Message):
+async def calculate_topics(message: Message, state: FSMContext):
     tg_photo = await bot.get_file(message.photo[-1].file_id)
     print(type(await bot.download_file(tg_photo.file_path)), await bot.download_file(tg_photo.file_path))
     img = Image.open(await bot.download_file(tg_photo.file_path))
@@ -31,15 +37,13 @@ async def calculate_topics(message: Message):
         latex = API().get_latex(img)
         print(type(latex), latex)
         try:
-            answer = API.integrate_from_latex(latex, 1000)
+            answer = API.integrate_from_latex(latex, 1)
             if answer['success']:
-                text = str('<b>Метод прямоугольников</b>: <i>{}</i>\n'
-                           '<b>Метод трапеций</b>: <i>{}</i>\n'
-                           '<b>Метод парабол</b>: <i>{}</i>').format(
-                    answer['squares_method'],
-                    answer['trapezoids_method'],
-                    answer['parabolic_method']
-                )
+                text = 'Введите число разбиений'
+                await state.set_state(UserStates.set_n)
+                user_latex[str(message.from_user.id)] = latex
+            else:
+                text = '😔 Не удалось распознать интеграл'
 
             await message.answer(text)
             # await bot.send_photo(
@@ -52,6 +56,25 @@ async def calculate_topics(message: Message):
     except Exception as e:
         print(e)
         await message.answer('😔 Не удалось обработать изображение')
+
+
+@router.message(StateFilter(UserStates.set_n), F.text)
+async def get_answer(message: Message, state: FSMContext):
+    if int(message.text):
+        answer = API.integrate_from_latex(user_latex[str(message.from_user.id)], int(message.text))
+        if answer['success']:
+            text = str('<b>Метод прямоугольников</b>: <i>{}</i>\n'
+                       '<b>Метод трапеций</b>: <i>{}</i>\n'
+                       '<b>Метод парабол</b>: <i>{}</i>').format(
+                answer['squares_method'],
+                answer['trapezoids_method'],
+                answer['parabolic_method']
+            )
+            await state.clear()
+        else:
+            text = 'Неверный формат ввода. Введите целое число'
+
+    await message.answer(text)
 
 
 @router.message(F.text)
