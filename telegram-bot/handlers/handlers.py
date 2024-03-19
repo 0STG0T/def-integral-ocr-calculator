@@ -1,10 +1,13 @@
+from aiogram import Bot
 from aiogram import F
 from aiogram.dispatcher.router import Router
 from aiogram.filters import CommandStart, StateFilter, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ContentType
 from aiogram.fsm.context import FSMContext
+from PIL import Image
 
 from lexicon.lexicon import LEXICON_RU
+from core.config import bot
 from services import *
 from keyboards import *
 
@@ -16,7 +19,28 @@ async def process_start_command(message: Message, state: FSMContext):
     await message.answer(text=LEXICON_RU['/start'])
 
 
-@router.message()
+@router.message(F.photo)
+async def calculate_topics(message: Message):
+    tg_photo = await bot.get_file(message.photo[-1].file_id)
+    print(type(await bot.download_file(tg_photo.file_path)), await bot.download_file(tg_photo.file_path))
+    img = Image.open(await bot.download_file(tg_photo.file_path))
+    print(type(img), img)
+    print(type(Image), Image)
+    try:
+        latex = API().get_latex(img)
+        try:
+            API.plot_latex(latex, '../temp', str(message.from_user.id))
+            await bot.send_photo(
+                f'../temp/latex_integral_{message.from_user.id}.jpg',
+                caption='Верно ли распознан интеграл?')
+        except Exception as e:
+            await message.answer('не удалось что-то сделать')
+    except Exception as e:
+        print(e)
+        await message.answer('😔 Не удалось обработать изображение')
+
+
+@router.message(F.text)
 async def calculate_function(message: Message, state: FSMContext):
     k, b, left, right = [float(el) for el in message.text.split()]
 
@@ -34,11 +58,6 @@ async def calculate_function(message: Message, state: FSMContext):
     await message.answer(text=text)
 
 
-@router.message(F.photo)
-async def calculate_topics(message: Message):
-    pass
-
-
 @router.message(Command('help'))
 async def process_command_help(message: Message):
     await message.answer(text=LEXICON_RU['/help'])
@@ -48,44 +67,3 @@ async def process_command_help(message: Message):
 async def cancel_button_process(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(text='Действие отменено')
     await state.clear()
-
-
-# @router_user.message(F.text == LEXICON_RU['user_show_content'])
-# async def content_button_pressed(message: Message):
-#     await message.answer(text=LEXICON_RU['choose_your_grade'], reply_markup=create_grades_kb())
-#
-#
-# @router_user.callback_query(UserGradeFilter())
-# async def show_modules_grade(callback: CallbackQuery):
-#     grade = callback.data.split('_')[0]
-#     await callback.message.edit_text(
-#         text='🗂 Выберите тему:',
-#         reply_markup=show_topics_kb(grade)
-#     )
-#
-#
-# @router_user.callback_query(UserBackButtonFilter())
-# async def show_modules_grade(callback: CallbackQuery):
-#     grade = callback.data.split('_')[-1]
-#     await callback.message.edit_text(
-#         text='🗂 Выберите тему:',
-#         reply_markup=show_topics_kb(grade)
-#     )
-#
-#
-# @router_user.callback_query(TopicsCallbacksFilter())
-# async def show_content(callback: CallbackQuery):
-#     grade = callback.data.split('_')[1]
-#     title = callback.data.split('_')[0]
-#     try:
-#         data = crud.get_content_by_title(grade, title)
-#         text = f'📖 <b>{title}</b>' + '\n\n' + data[1]
-#         await callback.message.edit_text(
-#             text=text,
-#             reply_markup=create_back_to_modules_kb(grade)
-#         )
-#     except Exception as e:
-#         await callback.message.edit_text(
-#             text='Something went wrong' + f'\n\n👾 Error: {e}',
-#             reply_mahrkup=create_back_to_modules_kb(grade)
-#         )

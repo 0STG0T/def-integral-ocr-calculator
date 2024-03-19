@@ -3,17 +3,11 @@ import logging
 
 from aiogram import Bot, Dispatcher
 
-from core.config import Config, load_config
+from core.config import bot, dp
 from handlers import handlers
-from aiogram.fsm.storage.memory import MemoryStorage
 
-storage = MemoryStorage()
 
 logging.basicConfig(level=logging.INFO)
-config: Config = load_config('.env')
-
-bot: Bot = Bot(token=config.tg_bot.token, parse_mode='HTML')
-dp: Dispatcher = Dispatcher(storage=storage)
 
 dp.include_router(handlers.router)
 
