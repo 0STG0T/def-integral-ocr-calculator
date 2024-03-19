@@ -16,9 +16,9 @@ from keyboards import *
 router: Router = Router()
 
 
-@router.message(CommandStart())
+@router.message(Command('help'))
 async def process_start_command(message: Message, state: FSMContext):
-    await message.answer(text=LEXICON_RU['/start'])
+    await message.answer(text=LEXICON_RU['/help'])
 
 
 @router.message(F.photo)
@@ -46,17 +46,22 @@ async def calculate_topics(message: Message):
 
 @router.message(F.text)
 async def calculate_function(message: Message, state: FSMContext):
-    k, b, left, right = [float(el) for el in message.text.split()]
+    try:
+        k, b, left, right = [float(el) for el in message.text.split()]
+    except Exception as e:
+        print(e)
+        await message.answer('🤕 Неверный формат ввода.\nФормат ввода смотрите по команде /help')
 
     def func(x):
         return sqrt(k * x + b)
 
-    text = ('<b>Метод прямоугольников</b>: <i>{}</i>\n'
+    text = f'Интеграл для функции <code>sqrt({k} * x + {b})</code>\nВ пределах от {left} до {right}:\n\n'
+    text += ('<b>Метод прямоугольников</b>: <i>{}</i>\n'
             '<b>Метод трапеций</b>: <i>{}</i>\n'
             '<b>Метод парабол</b>: <i>{}</i>').format(
-        str(rectangle_method(func, left, right, 100)),
-        str(trapezoid_method(func, left, right, 100)),
-        str(simpson_method(func, left, right, 100))
+        str(rectangle_method(func, left, right, 1000)),
+        str(trapezoid_method(func, left, right, 1000)),
+        str(simpson_method(func, left, right, 1000))
     )
 
     await message.answer(text=text)
