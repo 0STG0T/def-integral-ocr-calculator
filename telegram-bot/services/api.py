@@ -1,6 +1,12 @@
+import os
+
 from services.Integrator import IntegralCalculator
 from services.Math_OCR import OCR
 from PIL import Image
+
+import os
+
+import os
 
 
 class API:
@@ -9,27 +15,32 @@ class API:
 
     def get_latex(self, img: Image) -> str:
         """
-        Args: path_to_img (PIL.Image): image with an integral
-        Returns: (str) Integral in LaTex format
+        Args:
+            img (PIL.Image): Image with an integral
+        Returns:
+            str: Integral in LaTex format
         """
-
         ltx = self.ocr_model.predict(img=img)
-
         return ltx
 
+    @staticmethod
     def plot_latex(ltx: str, out_path: str, id: str) -> None:
         """
         Args:
             ltx (str): LaTex string
-            out_path (str): path where the picture of the plot will be saved
-        Returns:
-            dict:   
-                    success - True/False,
-                    other keys if success is True
+            out_path (str): Path where the picture of the plot will be saved
+            id (str): Unique identifier
         """
-
         import matplotlib.pyplot as plt
 
+        # Check if the output path exists and is a directory
+        if os.path.exists(out_path):
+            if not os.path.isdir(out_path):
+                raise ValueError(f"'{out_path}' exists but is not a directory")
+        else:
+            os.makedirs(out_path)
+
+        # Generate the image
         a = rf'{ltx}'
         ax = plt.axes([0, 0, 0.3, 0.3])  # left,bottom,width,height
         ax.set_xticks([])
@@ -37,7 +48,15 @@ class API:
         ax.axis('off')
         plt.text(0.4, 0.4, '$%s$' % a, size=50, color="green")
 
-        plt.savefig(out_path + '/' + f'latex_integral_{id}.jpg')
+        # Use os.path.join to handle paths robustly across different operating systems
+        file_path = os.path.join(out_path, f'latex_integral_{id}.jpg')
+
+        # Check if the file already exists
+        if os.path.exists(file_path):
+            raise FileExistsError(f"'{file_path}' already exists")
+
+        # Save the image
+        plt.savefig(file_path)
 
     def integrate_from_latex(ltx: str, n_chunks: int) -> dict:
         """

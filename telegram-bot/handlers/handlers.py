@@ -1,4 +1,5 @@
-from aiogram import Bot
+import io
+
 from aiogram import F
 from aiogram.dispatcher.router import Router
 from aiogram.filters import CommandStart, StateFilter, Command
@@ -10,6 +11,7 @@ from lexicon.lexicon import LEXICON_RU
 from core.config import bot
 from services import *
 from keyboards import *
+
 
 router: Router = Router()
 
@@ -28,13 +30,15 @@ async def calculate_topics(message: Message):
     print(type(Image), Image)
     try:
         latex = API().get_latex(img)
+        print(type(latex), latex)
         try:
             API.plot_latex(latex, '../temp', str(message.from_user.id))
-            await bot.send_photo(
-                f'../temp/latex_integral_{message.from_user.id}.jpg',
-                caption='Верно ли распознан интеграл?')
+            # await bot.send_photo(
+            #     f'../temp/latex_integral_{message.from_user.id}.jpg',
+            #     caption='Верно ли распознан интеграл?')
         except Exception as e:
-            await message.answer('не удалось что-то сделать')
+            print(e)
+            await message.answer(str(e))
     except Exception as e:
         print(e)
         await message.answer('😔 Не удалось обработать изображение')
