@@ -23,7 +23,7 @@ class API:
         ltx = self.ocr_model.predict(img=img)
         return ltx
 
-    @staticmethod
+
     def plot_latex(ltx: str, out_path: str, id: str) -> None:
         """
         Args:
@@ -48,8 +48,7 @@ class API:
         ax.axis('off')
         plt.text(0.4, 0.4, '$%s$' % a, size=50, color="green")
 
-        # Use os.path.join to handle paths robustly across different operating systems
-        file_path = os.path.join(out_path, f'latex_integral_{id}.jpg')
+        file_path = out_path + '/' + f'latex_integral_{id}.png'
 
         # Check if the file already exists
         if os.path.exists(file_path):
