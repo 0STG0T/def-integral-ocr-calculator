@@ -4,6 +4,8 @@ from services.Integrator import IntegralCalculator
 from services.Math_OCR import OCR
 from PIL import Image
 
+import matplotlib.pyplot as plt
+
 import os
 
 import os
@@ -31,7 +33,6 @@ class API:
             out_path (str): Path where the picture of the plot will be saved
             id (str): Unique identifier
         """
-        import matplotlib.pyplot as plt
 
         # Generate the image
         a = rf'{ltx}'
