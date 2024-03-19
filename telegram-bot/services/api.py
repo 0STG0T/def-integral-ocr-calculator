@@ -65,6 +65,7 @@ class API:
             n_chunks (int): How many times the function will be divided into chunks.
         """
 
+        ltx = ltx[ltx.find('\int'):]
         calc = IntegralCalculator(ltx)
 
         try:

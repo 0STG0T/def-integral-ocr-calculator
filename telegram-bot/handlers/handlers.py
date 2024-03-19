@@ -4,7 +4,7 @@ from aiogram import F
 from aiogram.dispatcher.router import Router
 from aiogram.filters import CommandStart, StateFilter, Command
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, CallbackQuery, ContentType
+from aiogram.types import Message, CallbackQuery, ContentType, BufferedInputFile
 from aiogram.fsm.context import FSMContext
 from PIL import Image
 
@@ -17,8 +17,15 @@ router: Router = Router()
 
 user_latex: dict[str, str] = {}
 
+
 class UserStates(StatesGroup):
+    confirmation = State()
     set_n = State()
+
+
+@router.message(CommandStart())
+async def start(message: Message, state: FSMContext):
+    await message.answer(LEXICON_RU['start'])
 
 
 @router.message(Command('help'))
@@ -46,10 +53,14 @@ async def calculate_topics(message: Message, state: FSMContext):
                 text = '😔 Не удалось распознать интеграл'
 
             await message.answer(text)
-            # await bot.send_photo(
-            #     chat_id=message.from_user.id,
-            #     photo='latex_integral_{message.from_user.id}.jpg',
-            #     caption='Верно ли распознан интеграл?')
+            try:
+                photo = BufferedInputFile(path='latex_integral_{message.from_user.id}.jpg')
+                await message.answer_photo(
+                    photo=photo,
+                    caption='Верно ли распознан интеграл?',
+                    reply_markup=create_confirm_kb())
+            except Exception as e:
+                print(e)
         except Exception as e:
             print(e)
             await message.answer(str(e))
@@ -60,7 +71,7 @@ async def calculate_topics(message: Message, state: FSMContext):
 
 @router.message(StateFilter(UserStates.set_n), F.text)
 async def get_answer(message: Message, state: FSMContext):
-    if int(message.text):
+    try:
         answer = API.integrate_from_latex(user_latex[str(message.from_user.id)], int(message.text))
         if answer['success']:
             text = str('<b>Метод прямоугольников</b>: <i>{}</i>\n'
@@ -71,8 +82,9 @@ async def get_answer(message: Message, state: FSMContext):
                 answer['parabolic_method']
             )
             await state.clear()
-        else:
-            text = 'Неверный формат ввода. Введите целое число'
+    except Exception as e:
+        print(e)
+        text = 'Неверный формат ввода. Введите целое число'
 
     await message.answer(text)
 
