@@ -33,13 +33,6 @@ class API:
         """
         import matplotlib.pyplot as plt
 
-        # Check if the output path exists and is a directory
-        if os.path.exists(out_path):
-            if not os.path.isdir(out_path):
-                raise ValueError(f"'{out_path}' exists but is not a directory")
-        else:
-            os.makedirs(out_path)
-
         # Generate the image
         a = rf'{ltx}'
         ax = plt.axes([0, 0, 0.3, 0.3])  # left,bottom,width,height
@@ -47,7 +40,12 @@ class API:
         ax.set_yticks([])
         ax.axis('off')
         plt.text(0.4, 0.4, '$%s$' % a, size=50, color="green")
-
+        
+        try:
+            os.mkdir(path=out_path)
+        except:
+            pass
+        
         file_path = out_path + '/' + f'latex_integral_{id}.png'
 
         # Check if the file already exists
