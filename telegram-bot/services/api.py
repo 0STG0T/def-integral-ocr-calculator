@@ -47,12 +47,14 @@ class API:
         except:
             pass
         
-        file_path = out_path + '/' + f'latex_integral_{id}.png'
+        file_path = f'latex_integral_{id}.png'
 
-        # Check if the file already exists
-        if os.path.exists(file_path):
-            raise FileExistsError(f"'{file_path}' already exists")
-
+        try:
+            # Check if the file already exists
+            if os.path.exists(file_path):
+                raise FileExistsError(f"'{file_path}' already exists")
+        except:
+            pass
         # Save the image
         plt.savefig(file_path)
 
